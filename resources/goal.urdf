@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="goal">
+    <link name="goal_link">
+        <visual>
+            <geometry>
+                <mesh filename="meshes/Lines.stl" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+        </visual>
+        <visual>
+            <geometry>
+                <box size="0.6 0.1 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="-7.3 -1.35 0.5" />
+        </visual>
+        <visual>
+            <geometry>
+                <box size="0.6 0.1 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="-7.3 1.35 0.5" />
+        </visual>
+        <visual>
+            <geometry>
+                <box size="0.1 2.8 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="-7.65 0.0 0.5" />
+        </visual>
+        <visual>
+            <geometry>
+                <box size="0.6 0.1 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="7.3 -1.35 0.5" />
+        </visual>
+        <visual>
+            <geometry>
+                <box size="0.6 0.1 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="7.3 1.35 0.5" />
+        </visual>
+        <visual>
+            <geometry>
+                <box size="0.1 2.8 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="7.65 0.0 0.5" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.6 0.1 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="-7.3 -1.35 0.5" />
+        </collision>
+        <collision>
+            <geometry>
+                <box size="0.6 0.1 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="-7.3 1.35 0.5" />
+        </collision>
+        <collision>
+            <geometry>
+                <box size="0.1 2.8 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="-7.65 0.0 0.5" />
+        </collision>
+        <collision>
+            <geometry>
+                <box size="0.6 0.1 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="7.3 -1.35 0.5" />
+        </collision>
+        <collision>
+            <geometry>
+                <box size="0.6 0.1 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="7.3 1.35 0.5" />
+        </collision>
+        <collision>
+            <geometry>
+                <box size="0.1 2.8 1.0" />
+            </geometry>
+            <origin rpy="0 0 0" xyz="7.65 0.0 0.5" />
+        </collision>
+    </link>
+</robot>
