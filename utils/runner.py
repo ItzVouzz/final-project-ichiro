@@ -194,6 +194,7 @@ class Runner:
                     "reward": reward.sum(dim=-1),
                     "success_rate": infos["success"],
                     "fall_rate": infos["fall"],
+                    "ball_to_target_error": infos["ball_to_target_error"],
                 }
                 infos["rew_terms"].update({"amp": self.cfg["algorithm"]["amp_reward_coef"] * amp_rew})
                 ep_info.update(infos["rew_terms"])
@@ -361,6 +362,10 @@ class Runner:
                 statistics[key] /= self.cfg["algorithm"]["num_learning_epochs"] * self.cfg["algorithm"]["num_mini_batches"]
 
             if self.rank == 0:
+                if hasattr(self.env.env, "update_curriculum"):
+                    self.env.env.update_curriculum(infos["success"].mean().item())
+                    statistics["curriculum_progress"] = self.env.env.curriculum_progress
+    
                 self.recorder.record_statistics(statistics, it)
                 if (it + 1) % self.cfg["runner"]["save_interval"] == 0:
                     self.recorder.save({"model": self.model.state_dict(), "discriminator": self.discriminator.state_dict()}, it + 1)

@@ -1,0 +1,243 @@
+basic:
+  checkpoint: null
+  headless: false
+  device: "cuda:0"
+  max_iterations: 20000
+  seed: 42
+  description: "Booster K1 Vision Kick - mjlab + Curriculum"
+
+env:
+  num_envs: 2048 # Optimal untuk 8 GiB VRAM RTX 5050 (bisa dinaikkan ke 4096 jika VRAM longgar)
+  num_observations: 55
+  num_critic_obs: 67
+  num_privileged_obs: 14
+  num_amp_obs: 39
+  num_actions: 14
+  env_spacing: 0.
+
+curriculum:
+  enabled: true # Opsi C: Ubah ke false jika ingin melatih baseline tanpa kurikulum sebagai pembanding laporan
+  init_progress: 0.15 # Mulai dari jarak dekat ke gawang (15% ukuran lapangan)
+  advance_threshold: 0.35 # Naikkan level saat success_rate melewati 35%
+  step_size: 0.05 # Kenaikan level per evaluasi
+
+motion:
+  motion_path: "data"
+  reference_state_init: true
+  replay_buffer_size: 500000
+  height_scale: 0.75
+
+runner:
+  num_stack: 50
+  horizon_length: 24
+  save_path: "."
+  save_interval: 100
+  use_wandb: false
+
+viewer:
+  pos: [3., -3., 2.]
+  lookat: [0., 0., 0.]
+  record_video: false
+  record_interval: 5.
+  record_env_idx: 0
+
+algorithm:
+  num_learning_epochs: 5
+  num_mini_batches: 4
+  history_embedding_dim: 64
+  learning_rate: 1.e-3
+  discriminator_lr: 1.e-4
+  gamma: 0.995
+  lam: 0.95
+  bound_coef: 100.0
+  reconstruction_coef: 1.0
+  entropy_coef: -0.01
+  symmetric_coef: 10.
+  amp_coef: 1.0
+  grad_pen_coef: 5.0
+  desired_kl: 0.01
+  advantage_coef: [2.0, 1.0]
+  amp_reward_coef: 0.3
+
+sim:
+  dt: 0.002
+  substeps: 1
+  up_axis: "z"
+  gravity: [0.0, 0.0, -9.81]
+  use_cuda_graph: true
+
+asset:
+  file: "resources/K1.urdf"
+  mujoco_file: "resources/K1.xml"
+  name: "K1"
+  base_name: "trunk"
+  head_name: "aahead_pitch_link"
+  foot_names: ["left_ankle_roll_link", "right_ankle_roll_link"]
+  feet_edge_pos: [[0.116, 0.035, -0.038], [0.116, -0.035, -0.038], [-0.064, 0.035, -0.038], [-0.064, -0.035, -0.038]]
+  camera_pos: [0.053617, -0.0115, 0.10231]
+  camera_fov: [87, 58]
+
+init_state:
+  pos: [0.0, 0.0, 0.54]
+  rot: [0.0, 0.0, 0.0, 1.0]
+  lin_vel: [0.0, 0.0, 0.0]
+  ang_vel: [0.0, 0.0, 0.0]
+  default_joint_angles: { "hip_pitch": -0.2, "knee_pitch": 0.4, "ankle_pitch": -0.2, "default": 0. }
+
+control:
+  stiffness: { "head": 20., "hip": 120., "knee": 150., "ankle": 35. }
+  damping: { "head": 0.5, "hip": 3., "knee": 4., "ankle": 1. }
+  action_scale: 1.
+  decimation: 10
+
+terrain:
+  type: "plane"
+  border_size: 20.
+  env_width: 0.
+  env_length: 0.
+
+normalization:
+  gravity: 1.0
+  lin_vel: 1.0
+  ang_vel: 1.0
+  dof_pos: 1.0
+  dof_vel: 0.1
+  push_force: 0.1
+  push_torque: 0.5
+  clip_actions: 1.
+
+noise:
+  gravity:
+    range: [0., 0.01]
+    operation: "additive"
+    distribution: "gaussian"
+  lin_vel:
+    range: [0., 0.05]
+    operation: "additive"
+    distribution: "gaussian"
+  ang_vel:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+  dof_pos:
+    range: [0., 0.01]
+    operation: "additive"
+    distribution: "gaussian"
+  dof_vel:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+  height:
+    range: [0., 0.02]
+    operation: "additive"
+    distribution: "gaussian"
+  goal_pos:
+    range: [0., 0.5]
+    operation: "additive"
+    distribution: "gaussian"
+  base_yaw:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+
+randomization:
+  init_dof_pos:
+    range: [0., 0.05]
+    operation: "additive"
+    distribution: "gaussian"
+  init_base_pos_xy:
+    range: [-1., 1.]
+    operation: "additive"
+    distribution: "uniform"
+  init_base_lin_vel_xy:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+
+  kick_interval_s: 2.
+  kick_lin_vel:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+  kick_ang_vel:
+    range: [0., 0.02]
+    operation: "additive"
+    distribution: "gaussian"
+
+  push_interval_s: 5.
+  push_duration_s: 1.
+  push_force:
+    range: [0., 15.]
+    operation: "additive"
+    distribution: "gaussian"
+  push_torque:
+    range: [0., 1.5]
+    operation: "additive"
+    distribution: "gaussian"
+
+  reset_ball_prob: 1.e-3
+  kick_ball_prob: 5.e-3
+  kick_ball_vel: 0.5
+  ball_delay_step:
+    range: [6, 1]
+    operation: "additive"
+    distribution: "gaussian"
+
+  dof_offset:
+    range: [-0.05, 0.05]
+    operation: "additive"
+    distribution: "uniform"
+  dof_stiffness:
+    range: [0.95, 1.05]
+    operation: "scaling"
+    distribution: "uniform"
+  dof_damping:
+    range: [0.95, 1.05]
+    operation: "scaling"
+    distribution: "uniform"
+
+  base_com:
+    range: [-0.05, 0.05]
+    operation: "additive"
+    distribution: "uniform"
+  base_mass:
+    range: [0.95, 1.05]
+    operation: "scaling"
+    distribution: "uniform"
+
+  ball_friction:
+    range: [0.1, 0.3]
+    operation: "additive"
+    distribution: "uniform"
+
+rewards:
+  scales:
+    survival: 3.
+    termination: -1000.
+    pos_still: -100.
+    goal: 15.
+    ball_distance: 50.
+    goal_distance: 500.
+    kick_ball: -20.
+    side_kick_ball: 20.
+    face_ball_pitch: -0.5
+    face_ball_yaw: -0.5
+    root_acc: -1.e-3
+    action_rate: -1.
+    head_action_rate: -15.
+    dof_pos_limits: -100.
+    collision: -100.
+    feet_min_distance: -5.
+  rew_group_item: ["goal", "ball_distance", "goal_distance"]
+  episode_length_s: 60.
+  terminate_height: 0.32
+  terminate_vel: 50.
+  terminate_contacts_on: []
+  penalize_contacts_on: ["trunk", "head", "shoulder", "elbow", "hip", "knee", "ankle_pitch"]
+  only_positive_rewards: false
+  soft_dof_pos_limit: 0.9
+  max_kick_vel: 2.0
+  feet_min_distance: 0.1
+  penalize_pos: 0.7
+  penalize_yaw: 1.0
+  penalize_pos_distance: 1.0
