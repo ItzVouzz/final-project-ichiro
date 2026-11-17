@@ -5,8 +5,13 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 
-from envs.t1 import T1
+from envs.k1 import K1
 from utils.task_registry import task_registry
 
+task_registry.register("K1", K1, "K1.yaml")
 
-task_registry.register("T1", T1, "T1.yaml")
+try:
+    from envs.t1 import T1
+    task_registry.register("T1", T1, "T1.yaml")
+except ImportError:
+    pass

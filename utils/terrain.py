@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 
-from isaacgym import gymapi, terrain_utils
 import torch
 import numpy as np
 

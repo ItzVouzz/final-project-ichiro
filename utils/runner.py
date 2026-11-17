@@ -163,6 +163,8 @@ class Runner:
         amp_obs = infos["amp_obs"]
         for it in range(self.cfg["basic"]["max_iterations"]):
             # within horizon_length, env.step() is called with same act
+            done_sum = 0.0
+            success_sum = 0.0
             for n in range(self.cfg["runner"]["horizon_length"]):
                 self.buffer.update_data("obses", n, obs)
                 self.buffer.update_data("critic_obses", n, critic_obs)
@@ -174,6 +176,8 @@ class Runner:
                     dist, _ = self.model.act(obs, stacked_obs)
                     act = dist.sample()
                 obs, rew, done, infos = self.env.step(act)
+                done_sum += done.float().sum().item()
+                success_sum += (infos["success"] * done.float()).sum().item()
                 critic_obs = infos["critic_obs"]
                 privileged_obs = infos["privileged_obs"]
                 stacked_obs = infos["stacked_obs"]
@@ -194,6 +198,7 @@ class Runner:
                     "reward": reward.sum(dim=-1),
                     "success_rate": infos["success"],
                     "fall_rate": infos["fall"],
+                    "ball_to_target_error": infos["ball_to_target_error"],
                 }
                 infos["rew_terms"].update({"amp": self.cfg["algorithm"]["amp_reward_coef"] * amp_rew})
                 ep_info.update(infos["rew_terms"])
@@ -361,6 +366,12 @@ class Runner:
                 statistics[key] /= self.cfg["algorithm"]["num_learning_epochs"] * self.cfg["algorithm"]["num_mini_batches"]
 
             if self.rank == 0:
+                if hasattr(self.env.env, "update_curriculum"):
+                    if done_sum > 0:
+                        ep_success_rate = success_sum / done_sum
+                        self.env.env.update_curriculum(ep_success_rate)
+                    statistics["curriculum_progress"] = self.env.env.curriculum_progress
+    
                 self.recorder.record_statistics(statistics, it)
                 if (it + 1) % self.cfg["runner"]["save_interval"] == 0:
                     self.recorder.save({"model": self.model.state_dict(), "discriminator": self.discriminator.state_dict()}, it + 1)

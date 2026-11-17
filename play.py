@@ -5,10 +5,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 
-import isaacgym
 from utils.runner import Runner
-
 
 if __name__ == "__main__":
     runner = Runner()
-    runner.play()
+    runner.train()
