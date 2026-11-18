@@ -659,12 +659,19 @@ class K1(BaseTask):
 
         self.ball_obs_buffer[:] = torch.roll(self.ball_obs_buffer, 1, dims=1)
         mask = self.episode_length_buf % 2 == 0
-        self.ball_obs_buffer[mask, 0, 0:2] = ball_in_view[mask].unsqueeze(-1) * (
-            self.relative_ball_pos[mask, :]
-            + (0.149 + 0.124 * torch.norm(self.relative_ball_pos[mask, :], dim=-1)).unsqueeze(-1)
-            * torch.randn_like(self.relative_ball_pos[mask, :])
+        seen_mask = mask & (ball_in_view > 0.5)
+        unseen_mask = mask & (ball_in_view <= 0.5)
+
+        self.ball_obs_buffer[seen_mask, 0, 0:2] = (
+            self.relative_ball_pos[seen_mask, :]
+            + (0.05 + 0.05 * torch.norm(self.relative_ball_pos[seen_mask, :], dim=-1)).unsqueeze(-1)
+            * torch.randn_like(self.relative_ball_pos[seen_mask, :])
         )
-        self.ball_obs_buffer[mask, 0, 2] = ball_in_view[mask]
+        self.ball_obs_buffer[seen_mask, 0, 2] = 1.0
+
+        self.ball_obs_buffer[unseen_mask, 0, 0:2] = self.ball_obs_buffer[unseen_mask, 1, 0:2]
+        self.ball_obs_buffer[unseen_mask, 0, 2] = 0.0
+
         self.ball_obs_buffer[~mask, 0, :] = self.ball_obs_buffer[~mask, 1, :]
 
         self.obs_buf = torch.cat(
@@ -760,9 +767,14 @@ class K1(BaseTask):
         return ((self.ball_pos[:, 0] > 7.0) & (torch.abs(self.ball_pos[:, 1]) < 1.3)).float()
 
     def _reward_ball_distance(self):
-        return torch.norm(self.ball_pos[:, 0:2] - self.last_base_pos, dim=-1) - torch.norm(
-            self.ball_pos[:, 0:2] - self.base_pos[:, 0:2], dim=-1
-        )
+        goal_pt = torch.tensor([7.0, 0.0], dtype=torch.float, device=self.device)
+        ball_to_goal = goal_pt - self.ball_pos[:, 0:2]
+        ball_to_goal_dir = ball_to_goal / (torch.norm(ball_to_goal, dim=-1, keepdim=True) + 1e-6)
+        
+        kick_target = self.ball_pos[:, 0:2] - 0.25 * ball_to_goal_dir
+        return torch.norm(kick_target - self.last_base_pos, dim=-1) - torch.norm(
+            kick_target - self.base_pos[:, 0:2], dim=-1
+    )
 
     def _reward_goal_distance(self):
         goal_pt = torch.tensor([7.0, 0.0], dtype=torch.float, device=self.device)
@@ -773,6 +785,23 @@ class K1(BaseTask):
             self.ball_pos[:, 0:2] - goal_pt, dim=-1
         )
         return last_val - cur_val
+    
+    def _reward_align_ball_goal(self):
+        goal_pt = torch.tensor([7.0, 0.0], dtype=torch.float, device=self.device)
+        robot_to_ball = self.ball_pos[:, 0:2] - self.base_pos[:, 0:2]
+        ball_to_goal = goal_pt - self.ball_pos[:, 0:2]
+        r2b_dir = robot_to_ball / (torch.norm(robot_to_ball, dim=-1, keepdim=True) + 1e-6)
+        b2g_dir = ball_to_goal / (torch.norm(ball_to_goal, dim=-1, keepdim=True) + 1e-6)
+
+        cos_align = torch.sum(r2b_dir * b2g_dir, dim=-1).clip(min=0.0)
+
+        left_post = torch.tensor([7.0, 1.3], dtype=torch.float, device=self.device)
+        right_post = torch.tensor([7.0, -1.3], dtype=torch.float, device=self.device)
+        near_post = (
+            (torch.norm(self.base_pos[:, 0:2] - left_post, dim=-1) < 0.35)
+            | (torch.norm(self.base_pos[:, 0:2] - right_post, dim=-1) < 0.35)
+        ).float()
+        return cos_align - 2.0 * near_post
 
     def _reward_kick_ball(self):
         edge_to_ball = torch.norm(

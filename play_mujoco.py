@@ -158,11 +158,14 @@ if __name__ == "__main__":
             )
 
             if it % cfg["control"]["decimation"] == 0:
-                # Update buffer kamera terlebih dahulu agar pada it==0 bola langsung terlihat
                 ball_obs_buffer[1:, :] = ball_obs_buffer[:-1, :]
                 if (it // cfg["control"]["decimation"]) % 2 == 0:
-                    ball_obs_buffer[0, 0:2] = ball_in_view * relative_ball_pos
-                    ball_obs_buffer[0, 2] = ball_in_view
+                    if ball_in_view > 0.5:
+                        ball_obs_buffer[0, 0:2] = relative_ball_pos
+                        ball_obs_buffer[0, 2] = 1.0
+                    else:
+                        ball_obs_buffer[0, 0:2] = ball_obs_buffer[1, 0:2]
+                        ball_obs_buffer[0, 2] = 0.0
                 if it == 0:
                     ball_obs_buffer[:] = ball_obs_buffer[0:1, :]
 

@@ -75,19 +75,19 @@ asset:
   foot_names: ["left_ankle_roll_link", "right_ankle_roll_link"]
   feet_edge_pos: [[0.116, 0.035, -0.038], [0.116, -0.035, -0.038], [-0.064, 0.035, -0.038], [-0.064, -0.035, -0.038]]
   camera_pos: [0.053617, -0.0115, 0.10231]
-  camera_fov: [87, 58]
+  camera_fov: [110, 90]
 
 init_state:
   pos: [0.0, 0.0, 0.546]
   rot: [0.0, 0.0, 0.0, 1.0]
   lin_vel: [0.0, 0.0, 0.0]
   ang_vel: [0.0, 0.0, 0.0]
-  default_joint_angles: { "head_pitch": 0.25, "hip_pitch": -0.20, "knee_pitch": 0.35, "ankle_pitch": -0.15, "default": 0. }
+  default_joint_angles: { "head_pitch": 0.35, "hip_pitch": -0.20, "knee_pitch": 0.35, "ankle_pitch": -0.15, "default": 0. }
 
 control:
-  stiffness: { "head": 20., "hip": 180., "knee": 200., "ankle": 80. }
-  damping: { "head": 0.8, "hip": 5.0, "knee": 5.0, "ankle": 2.5 }
-  action_scale: 0.25
+  stiffness: { "head": 20., "hip": 130., "knee": 150., "ankle": 65. }
+  damping: { "head": 0.8, "hip": 4.0, "knee": 4.5, "ankle": 2.0 }
+  action_scale: 0.40
   head_action_scale: 0.90
   decimation: 10
 
@@ -215,21 +215,22 @@ rewards:
   scales:
     survival: 3.
     termination: -1000.
-    pos_still: -100.
-    goal: 15.
+    pos_still: -150.
+    goal: 20.
     ball_distance: 50.
-    goal_distance: 500.
-    kick_ball: -20.
-    side_kick_ball: 20.
-    face_ball_pitch: -2.5
+    goal_distance: 600.
+    align_ball_goal: 15.
+    kick_ball: -10.
+    side_kick_ball: 25.
+    face_ball_pitch: -2.0
     face_ball_yaw: -4.0
     root_acc: -1.e-3
-    action_rate: -1.
+    action_rate: -0.5
     head_action_rate: -0.5
     dof_pos_limits: -100.
     collision: -100.
     feet_min_distance: -5.
-  rew_group_item: ["goal", "ball_distance", "goal_distance"]
+  rew_group_item: ["goal", "ball_distance", "goal_distance", "align_ball_goal"]
   episode_length_s: 60.
   terminate_height: 0.32
   terminate_vel: 50.
@@ -237,8 +238,8 @@ rewards:
   penalize_contacts_on: ["trunk", "head", "shoulder", "elbow"]
   only_positive_rewards: false
   soft_dof_pos_limit: 0.9
-  max_kick_vel: 2.0
+  max_kick_vel: 2.5
   feet_min_distance: 0.1
-  penalize_pos: 0.7
-  penalize_yaw: 1.0
-  penalize_pos_distance: 1.0
+  penalize_pos: 0.5
+  penalize_yaw: 0.8
+  penalize_pos_distance: 0.15
