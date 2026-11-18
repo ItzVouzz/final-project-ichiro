@@ -32,14 +32,14 @@ While the reference implementation was designed for the 15-DOF Booster T1 robot 
 1. **Physics Engine Migration (Isaac Gym $\rightarrow$ `mjlab` / MuJoCo-Warp):**
    - Replaced the deprecated PhysX/Isaac Gym backend with a zero-copy GPU parallel MuJoCo-Warp pipeline (`envs/base_task.py`) accelerated via CUDA Graph capture.
    - Built a pure PyTorch quaternion and coordinate transformation library (`utils/torch_math.py`) handling automatic conversion between MuJoCo (`wxyz`) and policy (`xyzw`) quaternion conventions.
-2. **Morphological Adaptation to Booster K1 ($14\text{ DOF}$):**
-   - Adapted the kinematic chain from Booster T1 ($15\text{ DOF}$ with waist joint) to Booster K1 ($14\text{ DOF}$: $2$ head joints + $12$ leg joints, with arms locked as fixed bodies in `resources/K1.xml` and `resources/K1.urdf`).
-   - Derived new state/action dimensions ($\mathcal{O} \in \mathbb{R}^{55}$, $\mathcal{O}_{\text{critic}} \in \mathbb{R}^{67}$, $\mathcal{O}_{\text{priv}} \in \mathbb{R}^{14}$, $\mathcal{O}_{\text{AMP}} \in \mathbb{R}^{39}$, $\mathcal{A} \in \mathbb{R}^{14}$), morphological reflection matrices (`mirror_obs` and `mirror_act`) for symmetry loss, and static-equilibrium standing knee/ankle angles.
+2. **Morphological Adaptation to Booster K1 (14 DOF):**
+   - Adapted the kinematic chain from Booster T1 (15 DOF with waist joint) to Booster K1 (14 DOF: 2 head joints + 12 leg joints, with arms locked as fixed bodies in `resources/K1.xml` and `resources/K1.urdf`).
+   - Derived new state/action dimensions ($\mathcal{O} \in \mathbb{R}^{55}$, $\mathcal{O}_{\mathrm{critic}} \in \mathbb{R}^{67}$, $\mathcal{O}_{\mathrm{priv}} \in \mathbb{R}^{14}$, $\mathcal{O}_{\mathrm{AMP}} \in \mathbb{R}^{39}$, $\mathcal{A} \in \mathbb{R}^{14}$), morphological reflection matrices (`mirror_obs` and `mirror_act`) for symmetry loss, and static-equilibrium standing knee/ankle angles.
 3. **Automated Curriculum Learning:**
-   - Implemented an episodic success-rate-driven curriculum (`update_curriculum` in `envs/k1.py` and `utils/runner.py`) that progressively expands the ball and robot spawn distributions from near-goal zones ($p = 0.15$) to the full $14\text{ m} \times 9\text{ m}$ soccer pitch ($p = 1.0$) once the exponential moving average (EMA) of episodic `success_rate` exceeds a target threshold.
+   - Implemented an episodic success-rate-driven curriculum (`update_curriculum` in `envs/k1.py` and `utils/runner.py`) that progressively expands the ball and robot spawn distributions from near-goal zones ($p = 0.15$) to the full $14\text{ m} \times 9\text{ m}$ soccer pitch ($p = 1.0$) once the exponential moving average (EMA) episodic `success_rate` exceeds a target threshold.
 4. **Active Vision Search, Out-of-FOV Ball Memory, & Kick Alignment:**
    - Decoupled neck joint scaling (`head_action_scale: 0.90` vs. leg `action_scale: 0.40`) and tuned active-gaze rewards (`face_ball_yaw`, `face_ball_pitch`) so the robot actively rotates its head to track balls located to its side.
-   - Added a last-seen relative ball position memory mechanism in `ball_obs_buffer` when the ball exits the camera Field of View ($\text{ball\_in\_view} = 0$), preventing blind spinning when the ball stops near the feet.
+   - Added a last-seen relative ball position memory mechanism in `ball_obs_buffer` when the ball exits the camera Field of View (`ball_in_view == 0`), preventing blind spinning when the ball stops near the feet.
    - Formulated an approach-behind-ball target and a cosine-similarity alignment reward (`_reward_align_ball_goal`) with goal-post collision avoidance.
 
 ---
