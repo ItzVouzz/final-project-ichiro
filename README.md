@@ -220,7 +220,7 @@ To render simulation rollouts directly to an `.mp4` file in `videos/`:
 | **Peak Episodic Success Rate** |          `~41%`          |          `0.00%`          |
 | **Final Fall Rate**            |          `~64%`          |         `~99.7%`          |
 | **Mean Ball-to-Target Error**  |        `2.155 m`         |         `7.666 m`         |
-| **Curriculum Level Reached**   |       $p = 0.20+$        |   N/A ($p = 1.0$ fixed)   |
+| **Curriculum Level Reached**   |       `p = 0.45`         |   `N/A (p = 1.0 fixed)`   |
 
 ### Learning Curves & Evaluation Plots
 
