@@ -17,7 +17,7 @@
 </p>
 
 - **Full Demo Video (1--3 min):** [Link to Demo Video (YouTube / Google Drive)](https://drive.google.com/file/d/1caJ84jjlKKOmiQbSp5Fg7eDrrj7Mrrs1/view?usp=sharing)
-- **Technical Report:** [Link to Technical Report PDF](docs/Technical_Report.pdf)
+- **Technical Report:** [Link to Technical Report PDF](docs/TechnicalReport.pdf)
 
 ---
 
